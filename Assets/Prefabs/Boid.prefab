@@ -9,15 +9,16 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5593097798106157301}
+  - component: {fileID: 3878611558698108726}
   - component: {fileID: 7184216031109234039}
   - component: {fileID: 1382179535172694750}
   - component: {fileID: 2967958654942923775}
   - component: {fileID: 1712019012034924188}
+  - component: {fileID: -3679549450187416276}
   - component: {fileID: 3377925672381566736}
-  - component: {fileID: 3878611558698108726}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Boid
-  m_TagString: Untagged
+  m_TagString: Boid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -37,6 +38,44 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3878611558698108726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8091064313353378361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32fcc124a3aad80e7a1facef71a68157, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSpeed: 10
+  steeringForce: 8
+  nbRays: 1200
+  rayMaxDistance: 4
+  dodgeAngle: 40
+  destinationValidationRadius: 5
+  destinationChoosingRange: 100
+  collisionSphereRadius: 3
+  influenceSphereRadius: 10
+  debug: 0
+  desiredDirection: {x: 0, y: 0, z: 0}
+  boidDeathEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: 0c5ac893fda0dddab87d75875451ff84, type: 3}
+        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: OnBoidDeath
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &7184216031109234039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -790,6 +829,33 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8091064313353378361}
   m_Mesh: {fileID: 0}
+--- !u!54 &-3679549450187416276
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8091064313353378361}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!64 &3377925672381566736
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -809,18 +875,6 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!114 &3878611558698108726
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8091064313353378361}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32fcc124a3aad80e7a1facef71a68157, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

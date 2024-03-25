@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.Events;
 
 public class BoidController : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class BoidController : MonoBehaviour
     [SerializeField] private float dodgeAngle = 40.0f;
     [SerializeField] private float destinationValidationRadius = 5.0f;
     [SerializeField] private float destinationChoosingRange = 100.0f;
+    [SerializeField] private float collisionSphereRadius = 3.0f;
+    [SerializeField] private float influenceSphereRadius = 10.0f;
     [SerializeField] private bool debug = false;
 
     private Vector3 destination;
@@ -20,6 +23,9 @@ public class BoidController : MonoBehaviour
     [SerializeField] private Vector3 desiredDirection;
     private List<Vector3> rays;
     private List<Vector3> sortedRays;
+
+    public delegate void KillBoid();
+    public static event KillBoid boidDeathEvent;
 
     void Start()
     {
@@ -40,10 +46,67 @@ public class BoidController : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector3 randomSteerForce = Vector3.zero; // TODO: Implement steerforce
+        // Find the Boids in both spheres around the current Boid and filter out itself
+        Collider[] collisionsRiskyBoids = Physics.OverlapSphere(transform.position, collisionSphereRadius, LayerMask.GetMask("Boids"));
+        Collider[] influencingBoids = Physics.OverlapSphere(transform.position, influenceSphereRadius, LayerMask.GetMask("Boids"));
+        collisionsRiskyBoids = collisionsRiskyBoids.Where(boidCol => boidCol.gameObject != gameObject).ToArray();
+        influencingBoids = influencingBoids.Where(boidCol => boidCol.gameObject != gameObject).ToArray();
+
+        float xSum = 0;
+        float ySum = 0;
+        float zSum = 0;
+        Vector3 awayFromMidPoint = Vector3.zero;
+        Vector3 towardsMidPoint = Vector3.zero;
+        Vector3 averageBoidsDirection = Vector3.zero;
+        float closestBoidDistance = 1;
+
+        if (collisionsRiskyBoids.Length > 0)
+        {
+            // Separation
+            // Not fully tested yet hehe
+            collisionsRiskyBoids.OrderBy(boidCol => transform.position - boidCol.transform.position);
+            closestBoidDistance = collisionsRiskyBoids[0].transform.position.magnitude;
+            foreach (Collider boidCol in collisionsRiskyBoids)
+            {
+                xSum += boidCol.transform.position.x;
+                ySum += boidCol.transform.position.y;
+                zSum += boidCol.transform.position.z;
+            }
+            Vector3 riskyMiddlePoint = new(xSum / collisionsRiskyBoids.Length, ySum / collisionsRiskyBoids.Length, zSum / collisionsRiskyBoids.Length);
+            // awayFromMidPoint = riskyMiddlePoint - transform.position;
+            awayFromMidPoint = riskyMiddlePoint;
+            // End
+
+            // Alignement
+            // Vector3 averageBoidsDirection = influencingBoids.Average(boidCol => boidCol.transform.forward);
+            averageBoidsDirection = influencingBoids.Select(col => col.transform.up)
+            .Aggregate(Vector3.zero, (acc, dir) => acc + dir) / influencingBoids.Length; // Sum and average
+            averageBoidsDirection -= transform.position;
+            // End
+
+            // Cohesion
+            foreach (Collider boidCol in influencingBoids)
+            {
+                xSum += boidCol.transform.position.x;
+                ySum += boidCol.transform.position.y;
+                zSum += boidCol.transform.position.z;
+            }
+            Vector3 cohesionMmiddlePoint = new(xSum / influencingBoids.Length, ySum / influencingBoids.Length, zSum / influencingBoids.Length);
+            // towardsMidPoint = cohesionMmiddlePoint - transform.position;
+            towardsMidPoint = cohesionMmiddlePoint;
+            // End
+        }
+
+
+
+        Vector3 randomSteerForce = Vector3.zero; // TODO: Implement randomSteerForce
 
         desiredDirection = destination - transform.position;
-        Vector3 desiredVelocity = (desiredDirection + randomSteerForce).normalized * maxSpeed;
+        Vector3 desiredVelocity = (desiredDirection + averageBoidsDirection + towardsMidPoint + awayFromMidPoint + randomSteerForce).normalized * maxSpeed;
+        // Debug.DrawRay(transform.position, desiredVelocity, Color.red);
+        // Debug.DrawRay(transform.position, averageBoidsDirection * 5f, Color.blue);
+        Debug.DrawRay(transform.position, towardsMidPoint * 5f, Color.yellow);
+        Debug.DrawRay(transform.position, awayFromMidPoint * 5f, Color.green);
         Vector3 desiredSteeringForce = (desiredVelocity - velocity) * steeringForce;
         Vector3 acceleration = Vector3.ClampMagnitude(desiredSteeringForce, steeringForce) / 1;
 
@@ -73,11 +136,11 @@ public class BoidController : MonoBehaviour
         {
             if (Vector3.Angle(transform.up, ray) < dodgeAngle)
             {
-                if (Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacle")))
+                if (Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacles")))
                 {
                     // Select the closest Vector to forward which does not collide with anything
                     // TODO : increase steering force according to how close to the obstacle the boid is
-                    destination = sortedRays.First(ray => !Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacle")));
+                    destination = sortedRays.First(ray => !Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacles")));
                     return;
                 }
             }
@@ -91,7 +154,7 @@ public class BoidController : MonoBehaviour
             Color rayColor = new(1, 1, 1, 0.15f);
             if (Vector3.Angle(transform.up, ray) < dodgeAngle)
             {
-                if (Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacle"))) // color forward rays in Red if they hit an obstacle
+                if (Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacles"))) // color forward rays in Red if they hit an obstacle
                 {
                     rayColor = Color.red;
                 }
@@ -99,7 +162,23 @@ public class BoidController : MonoBehaviour
             Debug.DrawRay(transform.position, ray * rayMaxDistance, rayColor);
         }
 
+
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Wall"))
+        {
+            boidDeathEvent?.Invoke();
+            Destroy(gameObject);
+        }
+    }
+
+    // void OnDrawGizmos()
+    // {
+    //     Gizmos.color = new Color(1f, .99f, .8f, .2f);
+    //     Gizmos.DrawSphere(transform.position, influenceSphereRadius);
+    // }
 
     private List<Vector3> GenGoldenSpiralPoints(int numberPoints)
     {
@@ -122,6 +201,14 @@ public class BoidController : MonoBehaviour
             rays.Add(new Vector3((float)x, (float)y, (float)z));
         }
         return rays;
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.CompareTag("Boid"))
+        {
+            // Debug.Log("Carambolage de Boids");
+        }
     }
 
     void FixedUpdate()
