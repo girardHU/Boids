@@ -222,8 +222,8 @@ Transform:
   m_GameObject: {fileID: 394638719}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 25, y: -7.5, z: 0}
-  m_LocalScale: {x: 0.1, y: 15, z: 25}
+  m_LocalPosition: {x: 25, y: 0, z: 0}
+  m_LocalScale: {x: 0.1, y: 40, z: 25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1128520379}
@@ -327,8 +327,8 @@ Transform:
   m_GameObject: {fileID: 510857124}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -7.5, z: 12.5}
-  m_LocalScale: {x: 0.10000001, y: 15, z: 50}
+  m_LocalPosition: {x: 0, y: 0, z: 12.5}
+  m_LocalScale: {x: 0.10000001, y: 40, z: 50}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1128520379}
@@ -537,8 +537,8 @@ Transform:
   m_GameObject: {fileID: 702134743}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -7.5, z: -12.5}
-  m_LocalScale: {x: 0.10000001, y: 15, z: 50}
+  m_LocalPosition: {x: 0, y: 0, z: -12.5}
+  m_LocalScale: {x: 0.10000001, y: 40, z: 50}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1128520379}
@@ -965,7 +965,7 @@ Transform:
   m_GameObject: {fileID: 1128520378}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 7.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -990,7 +990,7 @@ GameObject:
   - component: {fileID: 1191825093}
   - component: {fileID: 1191825092}
   m_Layer: 3
-  m_Name: Wall (5)
+  m_Name: Roof
   m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1076,7 +1076,7 @@ Transform:
   m_GameObject: {fileID: 1191825091}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 20, z: 0}
   m_LocalScale: {x: 0.1, y: 25, z: 50}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1174,7 +1174,7 @@ GameObject:
   - component: {fileID: 1799372995}
   - component: {fileID: 1799372994}
   m_Layer: 3
-  m_Name: Wall (4)
+  m_Name: Ground
   m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1260,7 +1260,7 @@ Transform:
   m_GameObject: {fileID: 1799372993}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0, y: -15, z: 0}
+  m_LocalPosition: {x: 0, y: -20, z: 0}
   m_LocalScale: {x: 0.1, y: 25, z: 50}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1365,8 +1365,8 @@ Transform:
   m_GameObject: {fileID: 2125117702}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -25, y: -7.5, z: 0}
-  m_LocalScale: {x: 0.1, y: 15, z: 25}
+  m_LocalPosition: {x: -25, y: 0, z: 0}
+  m_LocalScale: {x: 0.1, y: 40, z: 25}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1128520379}
@@ -1429,7 +1429,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3878611558698108726, guid: a2927e5f8faf587ddac5d6fa044284f7, type: 3}
       propertyPath: rayMaxDistance
-      value: 4
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3878611558698108726, guid: a2927e5f8faf587ddac5d6fa044284f7, type: 3}
       propertyPath: destinationPrefab
@@ -1445,7 +1445,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5593097798106157301, guid: a2927e5f8faf587ddac5d6fa044284f7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5593097798106157301, guid: a2927e5f8faf587ddac5d6fa044284f7, type: 3}
       propertyPath: m_LocalPosition.z

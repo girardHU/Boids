@@ -51,31 +51,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 10
-  steeringForce: 8
   nbRays: 1200
-  rayMaxDistance: 4
-  dodgeAngle: 40
+  rayMaxDistance: 10
+  dodgeAngle: 30
   destinationValidationRadius: 5
   destinationChoosingRange: 100
   collisionSphereRadius: 3
-  influenceSphereRadius: 10
-  debug: 0
-  desiredDirection: {x: 0, y: 0, z: 0}
-  boidDeathEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11500000, guid: 0c5ac893fda0dddab87d75875451ff84, type: 3}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: set_name
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: OnBoidDeath
-          m_BoolArgument: 0
-        m_CallState: 2
+  influenceSphereRadius: 15
+  displayInfluenceRadius: 0
+  displayRayCasts: 0
+  displayDirections: 1
+  displayBoidCollisionMsg: 0
+  destination: {x: 0, y: 0, z: 0}
 --- !u!114 &7184216031109234039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -744,7 +731,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 1467
+  m_VersionIndex: 1479
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
