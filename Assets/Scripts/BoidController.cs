@@ -8,22 +8,19 @@ public class BoidController : MonoBehaviour
 {
     // Tweeking Variables
     [SerializeField] private float maxSpeed = 10.0f;
-    // [SerializeField] private float steeringForce = 15.0f;
-    private float steeringForce;
-    [SerializeField] private int nbRays = 1200;
-    [SerializeField] private float rayMaxDistance = 4.0f;
-    [SerializeField] private float dodgeAngle = 40.0f;
-    [SerializeField] private float destinationValidationRadius = 5.0f;
-    [SerializeField] private float destinationChoosingRange = 100.0f;
-    [SerializeField] private float collisionSphereRadius = 3.0f;
-    [SerializeField] private float influenceSphereRadius = 10.0f;
-    // [SerializeField] private float criticalCollDist = 4.0f;
-    private float criticalCollDist;
+    [SerializeField] private int nbRays = 600;
+    [SerializeField] private float rayMaxDistance = 10.0f;
+    [SerializeField] private float dodgeAngle = 30.0f;
+    [SerializeField] private float collisionSphereRadius = 5.0f;
+    [SerializeField] private float influenceSphereRadius = 15.0f;
 
     [SerializeField] private bool displayInfluenceRadius = false;
     [SerializeField] private bool displayRayCasts = false;
     [SerializeField] private bool displayDirections = false;
     [SerializeField] private bool displayBoidCollisionMsg = false;
+
+    private float steeringForce;
+    private float criticalCollDist;
 
     // Compute Variables
     public Vector3 destination;
@@ -31,112 +28,58 @@ public class BoidController : MonoBehaviour
     private Vector3 velocity;
 
     private Vector3 desiredDirection;
-    private Vector3 awayFromMidPoint;
-    private Vector3 towardsMidPoint;
-    private Vector3 averageBoidsDirection;
     private Vector3 awayFromObstacle;
 
     private List<Vector3> rays;
     private List<Vector3> sortedRays;
     private RaycastHit hit;
 
+    private int boidMask;
+    private int obstacleMask;
+
     // Delegates
     public delegate void KillBoid();
-    public static event KillBoid boidDeathEvent;
+    public static event KillBoid BoidDeathEvent;
+
 
     void Start()
     {
+        boidMask = LayerMask.GetMask("Boids");
+        obstacleMask = LayerMask.GetMask("Obstacles");
+
         steeringForce = maxSpeed * 1.5f;
         criticalCollDist = maxSpeed * 0.4f;
         position = transform.position;
+
         rays = GenGoldenSpiralPoints(nbRays); // Generate the rays
         StartCoroutine(CastPhysicsRays());
     }
 
     void Update()
     {
-        // Select new destination if previous one is reached
-        if (Vector3.Distance(transform.position, destination) < destinationValidationRadius)
-        {
-            destination = SelectRandomDestination();
-        }
         HandleMovement();
     }
 
     private void HandleMovement()
     {
-        // Find the Boids in both spheres around the current Boid
-        Collider[] collisionsRiskyBoids = Physics.OverlapSphere(transform.position, collisionSphereRadius, LayerMask.GetMask("Boids"));
-        Collider[] influencingBoids = Physics.OverlapSphere(transform.position, influenceSphereRadius, LayerMask.GetMask("Boids"));
-        // Filter out itself
-        collisionsRiskyBoids = collisionsRiskyBoids.Where(boidCol => boidCol.gameObject != gameObject).ToArray();
-        // influencingBoids = influencingBoids.Where(boidCol => boidCol.gameObject != gameObject).ToArray();
-
-        float xSum = 0;
-        float ySum = 0;
-        float zSum = 0;
-        awayFromMidPoint = Vector3.zero;
-        towardsMidPoint = Vector3.zero;
-        averageBoidsDirection = Vector3.zero;
-        // float closestBoidDistance = 1;
-
-        if (collisionsRiskyBoids.Length > 0)
-        {
-            // Separation
-            // Not fully tested yet hehe
-            collisionsRiskyBoids.OrderBy(boidCol => transform.position - boidCol.transform.position);
-            // closestBoidDistance = collisionsRiskyBoids[0].transform.position.magnitude;
-            foreach (Collider boidCol in collisionsRiskyBoids)
-            {
-                xSum += boidCol.transform.position.x;
-                ySum += boidCol.transform.position.y;
-                zSum += boidCol.transform.position.z;
-            }
-            Vector3 riskyMiddlePoint = new(xSum / collisionsRiskyBoids.Length, ySum / collisionsRiskyBoids.Length, zSum / collisionsRiskyBoids.Length);
-            awayFromMidPoint = transform.position - riskyMiddlePoint;
-            // End
-
-            // Alignement
-            averageBoidsDirection = influencingBoids.Select(col => col.transform.up)
-            .Aggregate(Vector3.zero, (acc, dir) => acc + dir) / influencingBoids.Length; // Sum and average
-            // End
-
-            // Cohesion
-            Vector3 sumOfPositions = Vector3.zero;
-            foreach (Collider boidCol in influencingBoids)
-            {
-                sumOfPositions += boidCol.gameObject.transform.position;
-            }
-            Vector3 cohesionMmiddlePoint = sumOfPositions / influencingBoids.Length;
-            towardsMidPoint = cohesionMmiddlePoint - transform.position;
-            // End
-        }
-
 
         Vector3 randomSteerForce = Vector3.zero; // TODO: Implement randomSteerForce
 
         desiredDirection = destination - transform.position;
-        // TODO: Apply each steeringStrength independently
+        float avoidObstacleWeight = (float)Math.Pow(rayMaxDistance / Mathf.Max(hit.distance, 0.0000001f), 3);
+        Vector3 awayFromObstacleScaled = awayFromObstacle.normalized * avoidObstacleWeight;
 
-        Vector3 desiredDirectionScaled = desiredDirection.normalized * steeringForce;
-        Vector3 awayFromObstacleScaled = awayFromObstacle.normalized * (float)Math.Pow(rayMaxDistance / Mathf.Max(hit.distance, 0.0000001f), 3);
-        Vector3 towardsMidPointScaled = Vector3.zero;
-        Vector3 awayFromMidPointScaled = Vector3.zero;
-        Vector3 averageBoidsDirectionScaled = Vector3.zero;
-
-        if (!(hit.distance > criticalCollDist))
-        {
-            towardsMidPointScaled = towardsMidPoint.normalized * Mathf.Max(Mathf.Pow(Vector3.Distance(transform.position, towardsMidPoint), 2), steeringForce);
-            awayFromMidPointScaled = awayFromMidPoint.normalized * Mathf.Max((float)Math.Pow(1 / Mathf.Max(Vector3.Distance(transform.position, awayFromMidPoint), 0.0000001f), 2), steeringForce);
-            averageBoidsDirectionScaled = averageBoidsDirection.normalized * (float)Math.Pow(Mathf.Max(hit.distance, 0.0000001f), 2);
-        }
+        Vector3 separationVect = ComputeSeparation();
+        Collider[] influencingBoids = Physics.OverlapSphere(transform.position, influenceSphereRadius, boidMask);
+        Vector3 alignementVect = ComputeAlignement(influencingBoids);
+        Vector3 cohesionVect = ComputeCohesion(influencingBoids);
 
         Vector3 desiredVelocity = (
-            desiredDirectionScaled
+            desiredDirection.normalized * steeringForce
             + awayFromObstacleScaled
-            + averageBoidsDirectionScaled
-            + towardsMidPointScaled
-            + awayFromMidPointScaled
+            + alignementVect
+            + cohesionVect
+            + separationVect
             + randomSteerForce) * maxSpeed;
 
         if (displayDirections)
@@ -145,12 +88,11 @@ public class BoidController : MonoBehaviour
             Debug.DrawRay(transform.position, awayFromObstacleScaled, Color.magenta);
             // Debug.DrawRay(transform.position, desiredDirectionScaled, Color.blue);
 
-            Debug.DrawRay(transform.position, averageBoidsDirectionScaled, Color.blue);
-            Debug.DrawRay(transform.position, towardsMidPointScaled, Color.green);
-            Debug.DrawRay(transform.position, awayFromMidPointScaled, Color.yellow);
+            Debug.DrawRay(transform.position, alignementVect, Color.blue);
+            Debug.DrawRay(transform.position, cohesionVect, Color.green);
+            Debug.DrawRay(transform.position, separationVect, Color.yellow);
         }
         Vector3 desiredSteeringForce = desiredVelocity - velocity;
-        // Vector3 acceleration = desiredSteeringForce;
         Vector3 acceleration = Vector3.ClampMagnitude(desiredSteeringForce, steeringForce) / 1;
 
         velocity = Vector3.ClampMagnitude(velocity + acceleration * Time.deltaTime, maxSpeed);
@@ -160,19 +102,72 @@ public class BoidController : MonoBehaviour
         transform.Rotate(90, 0, 0, Space.Self);
     }
 
-    public static Vector3 SelectRandomDestination()
+    private Vector3 ComputeSeparation()
     {
+        // Finding nearby Boids colliders and filter itself out
+        Collider[] collisionsRiskyBoids = Physics.OverlapSphere(transform.position, collisionSphereRadius, boidMask);
+        collisionsRiskyBoids = collisionsRiskyBoids.Where(boidCol => boidCol.gameObject != gameObject).ToArray();
 
-        float x = UnityEngine.Random.Range(-25f + 5, 25f - 5);
-        float y = UnityEngine.Random.Range(-7.5f + 2, 7.5f - 2);
-        float z = UnityEngine.Random.Range(-12.5f + 4, 12.5f - 4);
+        if (!(hit.distance > criticalCollDist)) // A remplacer par un meilleur weighting system
+            return Vector3.zero;
 
-        return new Vector3(x, y, z);
+        // Separation
+        // Not fully tested yet hehe
+        Vector3 awayFromMidPoint = Vector3.zero;
+
+        if (collisionsRiskyBoids.Length > 0)
+        {
+            Vector3 sumOfPositions = Vector3.zero;
+            collisionsRiskyBoids.OrderBy(boidCol => transform.position - boidCol.transform.position);
+            foreach (Collider boidCol in collisionsRiskyBoids)
+            {
+                sumOfPositions += boidCol.gameObject.transform.position;
+            }
+            Vector3 riskyMiddlePoint = sumOfPositions / collisionsRiskyBoids.Length;
+            awayFromMidPoint = transform.position - riskyMiddlePoint;
+        }
+
+        float weight = Mathf.Max((float)Math.Pow(1 / Mathf.Max(Vector3.Distance(transform.position, awayFromMidPoint), 0.0000001f), 2), steeringForce);
+        return awayFromMidPoint.normalized * weight;
+
+    }
+
+    private Vector3 ComputeCohesion(Collider[] influencingBoids)
+    {
+        if (!(hit.distance > criticalCollDist)) // A remplacer par un meilleur weighting system
+            return Vector3.zero;
+
+        // Cohesion
+        Vector3 towardsMidPoint = Vector3.zero;
+        Vector3 sumOfPositions = Vector3.zero;
+        foreach (Collider boidCol in influencingBoids)
+        {
+            sumOfPositions += boidCol.gameObject.transform.position;
+        }
+        Vector3 cohesionMmiddlePoint = sumOfPositions / influencingBoids.Length;
+        towardsMidPoint = cohesionMmiddlePoint - transform.position;
+
+        float weight = Mathf.Max(Vector3.Distance(transform.position, towardsMidPoint), steeringForce);
+        return towardsMidPoint.normalized * weight;
+
+    }
+
+    private Vector3 ComputeAlignement(Collider[] influencingBoids)
+    {
+        if (!(hit.distance > criticalCollDist)) // A remplacer par un meilleur weighting system
+            return Vector3.zero;
+
+        // Alignement
+        Vector3 averageBoidsDirection = influencingBoids.Select(col => col.transform.up)
+        .Aggregate(Vector3.zero, (acc, dir) => acc + dir) / influencingBoids.Length; // Sum and average
+
+        float weight = Mathf.Max((float)Math.Pow(Mathf.Max(hit.distance, 0.0000001f), 2), steeringForce);
+        return averageBoidsDirection.normalized * weight;
     }
 
     private IEnumerator CastPhysicsRays()
     {
-        yield return new WaitForSeconds(1f); // For proper layer initialization
+        yield return new WaitForSeconds(.1f); // For proper layer initialization
         while (true)
         {
             hit = default;
@@ -187,18 +182,22 @@ public class BoidController : MonoBehaviour
                 {
                     Ray frontRay = new(transform.position, ray * rayMaxDistance);
                     awayFromObstacle = Vector3.zero;
-                    if (Physics.Raycast(frontRay, out hit, LayerMask.GetMask("Obstacles")))
+                    if (Physics.Raycast(frontRay, out hit, obstacleMask))
                     {
-                        Debug.DrawRay(transform.position, ray * rayMaxDistance, Color.white);
-                        // Select the closest Vector to forward which does not collide with anything
-                        awayFromObstacle = rays.First(ray => !Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacles")));
-
-                        if (hit.distance < criticalCollDist)
+                        if (hit.collider.CompareTag("Wall")) // I have to double check, could not figure why the LayerMask in RayCast is not enough
                         {
-                            awayFromObstacle = hit.normal;
-                        }
+                            Debug.DrawRay(transform.position, ray * rayMaxDistance, Color.white);
+                            // Select the closest Vector to forward which does not collide with anything
+                            awayFromObstacle = rays.First(ray => !Physics.Raycast(transform.position, ray, rayMaxDistance, obstacleMask));
+                            Debug.Log(hit.collider.gameObject.name);
+                            Debug.Log(Vector3.zero);
+                            if (hit.distance < criticalCollDist)
+                            {
+                                awayFromObstacle = hit.normal;
+                            }
 
-                        yield return new WaitForSeconds(.1f);
+                            yield return new WaitForSeconds(.1f);
+                        }
                     }
                 }
             }
@@ -214,7 +213,7 @@ public class BoidController : MonoBehaviour
             Color rayColor = new(1, 1, 1, 0.15f);
             if (Vector3.Angle(transform.up, ray) < dodgeAngle)
             {
-                if (Physics.Raycast(transform.position, ray, rayMaxDistance, LayerMask.GetMask("Obstacles"))) // color forward rays in Red if they hit an obstacle
+                if (Physics.Raycast(transform.position, ray, rayMaxDistance, obstacleMask)) // color forward rays in Red if they hit an obstacle
                 {
                     rayColor = Color.red;
                     Debug.DrawRay(transform.position, ray * rayMaxDistance, rayColor);
@@ -225,12 +224,22 @@ public class BoidController : MonoBehaviour
 
     }
 
+    void OnEnable()
+    {
+        TargetController.NewDestinationEvent += (dest) => { Debug.Log(dest); destination = dest; };
+    }
+
+    void OnDisable()
+    {
+        TargetController.NewDestinationEvent -= (dest) => { destination = dest; };
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Wall"))
         {
             Debug.Log("Boid Died");
-            boidDeathEvent?.Invoke();
+            BoidDeathEvent?.Invoke();
             Destroy(gameObject);
         }
     }

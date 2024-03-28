@@ -51,16 +51,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 10
-  nbRays: 1200
+  nbRays: 600
   rayMaxDistance: 10
   dodgeAngle: 30
-  destinationValidationRadius: 5
-  destinationChoosingRange: 100
-  collisionSphereRadius: 3
+  collisionSphereRadius: 5
   influenceSphereRadius: 15
   displayInfluenceRadius: 0
-  displayRayCasts: 0
-  displayDirections: 1
+  displayRayCasts: 1
+  displayDirections: 0
   displayBoidCollisionMsg: 0
   destination: {x: 0, y: 0, z: 0}
 --- !u!114 &7184216031109234039
@@ -731,7 +729,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 1479
+  m_VersionIndex: 1485
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
