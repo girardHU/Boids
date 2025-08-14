@@ -715,6 +715,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nbBoids: 30
   boidPrefab: {fileID: 8091064313353378361, guid: a2927e5f8faf587ddac5d6fa044284f7, type: 3}
+  materials:
+  - {fileID: 2100000, guid: b743539841b1393c3b2ff361c6aca3fc, type: 2}
+  - {fileID: 2100000, guid: 4615e3e1f23ef6e51b1a1d745f0ef1fe, type: 2}
+  - {fileID: 2100000, guid: fbbce7f9ea5907900953b4b9ffd97f1f, type: 2}
 --- !u!4 &872194203
 Transform:
   m_ObjectHideFlags: 0

@@ -1,9 +1,11 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class BoidSpawner : MonoBehaviour
 {
     [SerializeField] private int nbBoids = 25;
     [SerializeField] private GameObject boidPrefab;
+    [SerializeField] private Material[] materials;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,7 +33,8 @@ public class BoidSpawner : MonoBehaviour
 
     private void SpawnBoid()
     {
-        Instantiate(boidPrefab, Vector3.zero, boidPrefab.transform.rotation);
+        GameObject inst = Instantiate(boidPrefab, Vector3.zero, boidPrefab.transform.rotation);
+        inst.GetComponent<Renderer>().material = materials[Random.Range(0, materials.Length)];
     }
 
 
